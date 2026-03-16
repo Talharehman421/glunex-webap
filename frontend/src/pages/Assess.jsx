@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Assess.css';
 import './Results.css';
+import API_URL from '../api';
 const AGE_CATEGORIES = [
   { value: 1, label: '18 – 24' }, { value: 2, label: '25 – 29' },
   { value: 3, label: '30 – 34' }, { value: 4, label: '35 – 39' },
@@ -103,14 +104,14 @@ useEffect(() => {
 fd.append('file', geneFile);
 if (useClinical) fd.append('clinical', JSON.stringify(buildClinical()));
 if (useLifestyle) fd.append('lifestyle', JSON.stringify(buildLifestyle()));
-        const res = await fetch('http://127.0.0.1:8000/predict/gene', { method: 'POST', body: fd });
+        const res = await fetch(`${API_URL}/predict/gene`, { method: 'POST', body: fd });
         if (!res.ok) throw new Error(await res.text());
         result = await res.json();
       } else {
         const body = {};
         if (useClinical) body.clinical = buildClinical();
         if (useLifestyle) body.lifestyle = buildLifestyle();
-        const res = await fetch('http://127.0.0.1:8000/predict', {
+        const res = await fetch(`${API_URL}/predict`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
