@@ -1,0 +1,113 @@
+{
+  "variants": {
+    "all_three": {
+      "model_file": "fusion_all3.joblib",
+      "modalities": [
+        "clinical",
+        "lifestyle",
+        "gene"
+      ],
+      "feature_order": [
+        "p_clinical_norm",
+        "p_lifestyle_norm",
+        "p_gene_norm"
+      ],
+      "type": "meta_model",
+      "coefficients": {
+        "w_clinical": 19.334652443552823,
+        "w_lifestyle": 4.916183490693672,
+        "w_gene": 3.0066633343911917,
+        "intercept": -22.263263540190724
+      },
+      "best_C": 5.0
+    },
+    "clin_life": {
+      "model_file": "fusion_clin_life.joblib",
+      "modalities": [
+        "clinical",
+        "lifestyle"
+      ],
+      "feature_order": [
+        "p_clinical_norm",
+        "p_lifestyle_norm"
+      ],
+      "type": "meta_model",
+      "coefficients": {
+        "w_clinical": 20.620801487418944,
+        "w_lifestyle": 5.017325320417226,
+        "intercept": -21.941865376464268
+      },
+      "best_C": 10.0
+    },
+    "clin_only": {
+      "model_file": null,
+      "modalities": [
+        "clinical"
+      ],
+      "type": "passthrough",
+      "passthrough_key": "p_clinical",
+      "note": "Clinical model is isotonic-calibrated (mean-prob vs prevalence gap=0.0008). p_final = p_clinical. No normalisation applied."
+    },
+    "life_only": {
+      "model_file": null,
+      "modalities": [
+        "lifestyle"
+      ],
+      "type": "passthrough",
+      "passthrough_key": "p_lifestyle",
+      "note": "Lifestyle model is isotonic-calibrated (mean-prob vs prevalence gap=0.0006). p_final = p_lifestyle. No normalisation applied."
+    }
+  },
+  "selection_logic": {
+    "clinical+lifestyle+gene": "all_three",
+    "clinical+lifestyle": "clin_life",
+    "clinical_only": "clin_only",
+    "lifestyle_only": "life_only"
+  },
+  "normalisation_file": "normalisation_params.json",
+  "risk_thresholds": {
+    "low": [
+      0.0,
+      0.3
+    ],
+    "moderate": [
+      0.3,
+      0.6
+    ],
+    "high": [
+      0.6,
+      1.0
+    ]
+  },
+  "rule_based_weights": {
+    "all_three": {
+      "clinical": 0.3800140197834722,
+      "lifestyle": 0.32093620998520134,
+      "gene": 0.29904977023132645
+    },
+    "clin_life": {
+      "clinical": 0.5421412300683371,
+      "lifestyle": 0.4578587699316629
+    },
+    "clin_gene": {
+      "clinical": 0.5596146126053794,
+      "gene": 0.44038538739462063
+    },
+    "life_gene": {
+      "lifestyle": 0.5176507537688442,
+      "gene": 0.48234924623115577
+    }
+  },
+  "model_aucs": {
+    "clinical": 0.9758,
+    "lifestyle": 0.8241,
+    "gene": 0.7679
+  },
+  "sensitivity_analysis": {
+    "n_seeds": 5,
+    "auc_mean": 0.9860718954248366,
+    "auc_std": 0.0028943419323080167,
+    "auc_min": 0.9822610021786492,
+    "auc_max": 0.9910435729847495
+  }
+}

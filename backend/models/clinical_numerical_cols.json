@@ -1,0 +1,8 @@
+[
+  "age",
+  "bmi",
+  "hbA1c_level",
+  "blood_glucose_level",
+  "comorbidity_count",
+  "metabolic_index"
+]

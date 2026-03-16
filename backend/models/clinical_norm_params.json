@@ -1,0 +1,10 @@
+{
+  "hba1c_min": 3.5,
+  "hba1c_max": 9.0,
+  "glucose_min": 80.0,
+  "glucose_max": 280.0,
+  "bmi_lower": 14.6,
+  "bmi_upper": 48.79149999999994,
+  "glucose_lower": 80.0,
+  "glucose_upper": 280.0
+}

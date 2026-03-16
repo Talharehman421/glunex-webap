@@ -1,0 +1,21 @@
+[
+  "CholCheck",
+  "BMI",
+  "Smoker",
+  "HvyAlcoholConsump",
+  "AnyHealthcare",
+  "NoDocbcCost",
+  "GenHlth",
+  "DiffWalk",
+  "Sex",
+  "Education",
+  "Income",
+  "Health_Behavior_Score",
+  "Comorbidity_Count",
+  "Stress_Index",
+  "Access_to_Care_Score",
+  "Lifestyle_Risk_Index",
+  "BMI_Category",
+  "Age_BMI_Interaction",
+  "Health_Status_Score"
+]
