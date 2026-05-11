@@ -69,3 +69,120 @@
 .wc-tips { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .wc-tips li { font-size: 13px; color: #4a5568; line-height: 1.6; padding-left: 14px; position: relative; }
 .wc-tips li::before { content: '·'; position: absolute; left: 3px; color: var(--wc); font-weight: 700; font-size: 16px; line-height: 1.3; }
+
+@media (max-width: 900px) {
+  .results-page {
+    padding: 22px 20px 64px;
+  }
+
+  .risk-header {
+    gap: 24px;
+    padding: 24px 20px;
+  }
+
+  .risk-score {
+    font-size: 58px;
+  }
+
+  .modality-scores,
+  .norm-scores,
+  .shap-block,
+  .wellness-block {
+    padding: 22px 20px;
+  }
+
+  .wellness-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .results-page {
+    padding: 16px 12px 52px;
+  }
+
+  .results-inner {
+    gap: 16px;
+  }
+
+  .results-topbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .variant-badge {
+    width: fit-content;
+  }
+
+  .risk-header {
+    padding: 16px 14px;
+    gap: 14px;
+  }
+
+  .rh-left {
+    min-width: 0;
+  }
+
+  .risk-score {
+    font-size: 46px;
+  }
+
+  .risk-desc {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .rh-right {
+    width: 100%;
+  }
+
+  .gauge-wrap {
+    width: 100%;
+  }
+
+  .gauge-svg {
+    width: 170px;
+  }
+
+  .modality-scores,
+  .norm-scores,
+  .shap-block,
+  .wellness-block {
+    padding: 16px 14px;
+  }
+
+  .ms-title {
+    font-size: 20px;
+  }
+
+  .ms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ms-card {
+    padding: 16px 14px;
+  }
+
+  .ns-item {
+    padding: 9px 10px;
+  }
+
+  .ns-key,
+  .ns-val {
+    font-size: 12px;
+  }
+
+  .shap-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+  }
+
+  .wellness-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wellness-card {
+    padding: 16px 14px;
+  }
+}
