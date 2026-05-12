@@ -30,9 +30,16 @@ FRONTEND_STATIC_DIR = FRONTEND_BUILD_DIR / "static"
 FRONTEND_INDEX_FILE = FRONTEND_BUILD_DIR / "index.html"
 
 # Allow React frontend to call this API
+_default_cors = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://glunex-frontend.onrender.com",
+    "https://glunex-webapp.onrender.com",
+]
+_extra = [o.strip() for o in os.getenv("CORS_EXTRA_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = ["http://localhost:3000", "https://glunex-frontend.onrender.com"],
+    allow_origins     = list(dict.fromkeys(_default_cors + _extra)),
     allow_credentials = True,
     allow_methods     = ["*"],
     allow_headers     = ["*"],

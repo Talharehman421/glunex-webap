@@ -549,7 +549,18 @@ export default function Assess() {
       }
       navigate('/results', { state: { result } });
     } catch (e) {
-      setError('Could not reach the backend. Make sure the FastAPI server is running on http://127.0.0.1:8000');
+      const base = API_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      const detail = e instanceof Error ? e.message : String(e);
+      const looksLikeNetwork =
+        e instanceof TypeError ||
+        /Failed to fetch|NetworkError|network error|Load failed|ECONNREFUSED/i.test(detail);
+      if (looksLikeNetwork) {
+        setError(
+          `Could not reach the API at ${base}. Locally: run FastAPI on port 8000, then npm start (dev server proxies to :8000). On Render: redeploy the unified service and remove any REACT_APP_API_URL pointing at localhost.`
+        );
+      } else {
+        setError(detail || 'Request failed.');
+      }
     } finally {
       setLoading(false);
     }

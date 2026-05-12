@@ -234,13 +234,11 @@ Frontend opens automatically at: `http://localhost:3000`
 
 > Both terminals must remain open while using the app.
 
-For local dev, the frontend defaults to same-origin requests. Because the API runs on port **8000** and the UI on **3000**, create `frontend/.env.local` with:
+For local dev, `frontend/package.json` sets **`"proxy": "http://127.0.0.1:8000"`**, so `npm start` forwards `/predict` and `/predict/gene` to FastAPI automatically. Start the backend on port 8000, then run `npm start`.
 
-```bash
-REACT_APP_API_URL=http://127.0.0.1:8000
-```
+Optional: set `REACT_APP_API_URL=http://127.0.0.1:8000` in `frontend/.env.local` to call the API directly (CORS must allow `localhost:3000`).
 
-Then restart `npm start`. In production on Render, leave this unset so the app calls `/predict` on the same host.
+**Render:** Do **not** set `REACT_APP_API_URL` to `http://127.0.0.1:8000` in the Render dashboard — that value is baked into the build and every user’s browser would try to reach your own PC. For unified hosting, leave it unset (same-origin).
 
 ---
 
