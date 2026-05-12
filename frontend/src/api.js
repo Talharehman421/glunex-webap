@@ -1,2 +1,2 @@
-const API_URL = "https://glunex-api.onrender.com";
+const API_URL = process.env.REACT_APP_API_URL || "";
 export default API_URL;

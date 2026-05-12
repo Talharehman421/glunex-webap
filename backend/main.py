@@ -5,10 +5,13 @@
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from typing import Optional
 import tempfile
 import os
+from pathlib import Path
 
 from predictors.clinical  import predict_clinical
 from predictors.lifestyle import predict_lifestyle
@@ -20,6 +23,11 @@ app = FastAPI(
     description = "Multimodal Type 2 Diabetes risk prediction using late fusion",
     version     = "1.0.0"
 )
+
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_BUILD_DIR = BASE_DIR / "frontend_build"
+FRONTEND_STATIC_DIR = FRONTEND_BUILD_DIR / "static"
+FRONTEND_INDEX_FILE = FRONTEND_BUILD_DIR / "index.html"
 
 # Allow React frontend to call this API
 app.add_middleware(
@@ -74,6 +82,8 @@ class PredictRequest(BaseModel):
 
 @app.get("/")
 def root():
+    if FRONTEND_INDEX_FILE.exists():
+        return FileResponse(str(FRONTEND_INDEX_FILE))
     return {"status": "T2D Risk Prediction API is running"}
 
 @app.get("/health")
@@ -260,6 +270,17 @@ async def predict_with_gene(
         "lifestyle"        : lifestyle_details,
         "gene"             : gene_result,
     }
+
+
+if FRONTEND_STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_STATIC_DIR)), name="frontend-static")
+
+
+@app.get("/{full_path:path}")
+def frontend_fallback(full_path: str):
+    if FRONTEND_INDEX_FILE.exists():
+        return FileResponse(str(FRONTEND_INDEX_FILE))
+    raise HTTPException(status_code=404, detail="Not Found")
 
 
 
