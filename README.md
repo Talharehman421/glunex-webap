@@ -361,9 +361,9 @@ All 19 model files live in `backend/models/`. They are required for the backend 
 
 **Single service on Render (recommended):** one Docker web app serves the API and the built React UI.
 
-- **Blueprint:** `render.yaml` uses **`dockerfilePath: ./Dockerfile`** and **`dockerContext: .`** (repository root). Push to GitHub and connect the repo in Render, or use “New → Blueprint”.
-- **Render dashboard (important):** Service **Root Directory** must be **empty** (repo root), not `backend`. If Root Directory is `backend`, the Docker context only contains the backend folder, so `COPY frontend/` and `COPY backend/...` fail. Set **Dockerfile Path** to `Dockerfile`.
-- **Dockerfile (repo root):** multi-stage build — Node builds `frontend/`, then Python image copies `backend/` and the build output into `frontend_build/`. FastAPI serves static assets and falls back to `index.html` for client routes.
+- **Blueprint:** `render.yaml` uses **`dockerfilePath: ./Dockerfile`** and **`dockerContext: .`**. Push to GitHub and connect the repo in Render, or use “New → Blueprint”.
+- **Dockerfile (repo root):** On build, the image **clones this GitHub repo** and checks out **`RENDER_GIT_COMMIT`** (passed automatically by Render) so the image matches the deploy. It then builds `frontend/` and copies `backend/` from that clone into the image. This avoids failures when Render’s Docker **build context** is wrong or nearly empty (e.g. Root Directory mis-set). You still should set **Root Directory** to **empty** and **Dockerfile Path** to **`Dockerfile`** for clarity.
+- **GitHub `403` on “Downloading cache”:** Usually a transient cache issue; the next deploy often succeeds. If it persists, clear build cache in Render and redeploy.
 - **Port:** the container starts with `uvicorn` bound to Render’s `PORT` environment variable.
 - **Public URL:** https://glunex-webapp.onrender.com (adjust if you renamed the service in Render).
 - **API docs:** https://glunex-webapp.onrender.com/docs
@@ -372,12 +372,14 @@ You do **not** need `REACT_APP_API_URL` on Render for the unified setup; the bro
 
 ### Docker (local, full stack in one container)
 
-From the **repository root** (not `backend/`):
+From the **repository root**. The Docker build clones GitHub (needs network). Pin the same commit as your working tree:
 
 ```bash
-docker build -t glunex-webapp .
+docker build -t glunex-webapp --build-arg RENDER_GIT_COMMIT=$(git rev-parse HEAD) .
 docker run -p 8000:8000 -e PORT=8000 glunex-webapp
 ```
+
+Without `--build-arg`, the image builds from the default branch checkout inside the clone (fine for CI; local-only changes not pushed to GitHub will not appear).
 
 Open http://127.0.0.1:8000 for the app and http://127.0.0.1:8000/docs for Swagger.
 
