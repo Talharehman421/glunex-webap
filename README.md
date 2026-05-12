@@ -2,8 +2,8 @@
 
 > **MSc Thesis Project** · Late Fusion Machine Learning System · FastAPI + React · Deployed on Render
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-glunex--frontend.onrender.com-blue)](https://glunex-frontend.onrender.com)
-[![API Docs](https://img.shields.io/badge/API%20Docs-glunex--api.onrender.com%2Fdocs-green)](https://glunex-api.onrender.com/docs)
+[![Live App](https://img.shields.io/badge/Live%20App-glunex--webapp.onrender.com-blue)](https://glunex-webapp.onrender.com)
+[![API Docs](https://img.shields.io/badge/API%20Docs-glunex--webapp.onrender.com%2Fdocs-green)](https://glunex-webapp.onrender.com/docs)
 [![Backend](https://img.shields.io/badge/Backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
 [![Frontend](https://img.shields.io/badge/Frontend-React-61DAFB)](https://reactjs.org/)
 
@@ -41,13 +41,26 @@ The system supports four input scenarios. Users provide whatever data they have 
 
 ## Live Demo
 
-| Service | URL |
-|---|---|
-| Frontend | https://glunex-frontend.onrender.com |
-| Backend API | https://glunex-api.onrender.com |
-| API Documentation (Swagger) | https://glunex-api.onrender.com/docs |
+The app is deployed as **one Render web service**: the React frontend and FastAPI backend share the same origin. You only need **one link** for the full experience.
 
-> **Note:** The app is hosted on Render's free tier. The backend may take **30–60 seconds** to respond on first load after a period of inactivity (cold start). Open the API URL first to wake the backend before using the app.
+| What | URL |
+|---|---|
+| **Web app (recommended)** | https://glunex-webapp.onrender.com |
+| **API documentation (Swagger)** | https://glunex-webapp.onrender.com/docs |
+| **Health check** | https://glunex-webapp.onrender.com/health |
+
+### Legacy URLs (older two-service setup)
+
+If you still have separate Render services from before the unified deploy, these may or may not still be active depending on your Render dashboard:
+
+| Legacy | URL |
+|---|---|
+| Old static frontend | https://glunex-frontend.onrender.com |
+| Old API-only service | https://glunex-api.onrender.com |
+
+**Prefer `glunex-webapp.onrender.com`:** the production frontend is built to call the API on the **same host** (empty base URL in `frontend/src/api.js`). The old frontend URL would no longer talk to the API correctly unless you keep a separate static site with `REACT_APP_API_URL` pointing at a live API.
+
+> **Note:** Render’s free tier can **cold start** the service. The first request after idle time may take **30–60 seconds**.
 
 ---
 
@@ -57,10 +70,12 @@ The system supports four input scenarios. Users provide whatever data they have 
 User Browser
      │
      ▼
-React Frontend (glunex-frontend.onrender.com)
-     │  POST /predict or POST /predict/gene
+Single Render URL (glunex-webapp.onrender.com)
+     │  Static React app + FastAPI on same origin
+     │  Browser: /, /assess, /results, …  →  SPA (React build)
+     │  Browser: POST /predict, POST /predict/gene  →  API
      ▼
-FastAPI Backend (glunex-api.onrender.com)
+FastAPI (serves API + built frontend files)
      │
      ├── Clinical Predictor (XGBoost + Isotonic Calibration)
      ├── Lifestyle Predictor (LightGBM + Isotonic Calibration)
@@ -122,8 +137,9 @@ The fusion meta-model is a Logistic Regression trained on synthetic patients con
 
 ```
 glunex-webap/
+├── render.yaml                    ← Render Blueprint: single Docker web service
 ├── backend/
-│   ├── main.py                    ← FastAPI app + all API endpoints
+│   ├── main.py                    ← FastAPI app + API + serves React build in production
 │   ├── predictors/
 │   │   ├── __init__.py
 │   │   ├── clinical.py            ← Clinical inference pipeline
@@ -138,7 +154,7 @@ glunex-webap/
 │   ├── public/
 │   ├── src/
 │   │   ├── App.jsx                ← Routing (4 pages)
-│   │   ├── api.js                 ← API base URL config
+│   │   ├── api.js                 ← API base URL (empty = same origin in production)
 │   │   ├── pages/
 │   │   │   ├── Home.jsx + Home.css
 │   │   │   ├── Assess.jsx + Assess.css
@@ -218,6 +234,14 @@ Frontend opens automatically at: `http://localhost:3000`
 
 > Both terminals must remain open while using the app.
 
+For local dev, the frontend defaults to same-origin requests. Because the API runs on port **8000** and the UI on **3000**, create `frontend/.env.local` with:
+
+```bash
+REACT_APP_API_URL=http://127.0.0.1:8000
+```
+
+Then restart `npm start`. In production on Render, leave this unset so the app calls `/predict` on the same host.
+
 ---
 
 ## API Reference
@@ -279,7 +303,7 @@ Run prediction including gene expression data.
 
 ### `GET /health`
 
-Health check endpoint. Returns `{"status": "T2D Risk Prediction API is running"}`.
+Health check endpoint. Returns `{"status": "ok"}`.
 
 ---
 
@@ -337,29 +361,30 @@ All 19 model files live in `backend/models/`. They are required for the backend 
 
 ## Deployment
 
-Both services are deployed on **Render** (free tier).
+**Single service on Render (recommended):** one Docker web app serves the API and the built React UI.
 
-### Backend (Web Service)
-- **Build:** Docker (`backend/Dockerfile`)
-- **Start command:** `uvicorn main:app --host 0.0.0.0 --port 8000`
-- **URL:** `https://glunex-api.onrender.com`
+- **Blueprint:** `render.yaml` defines service `glunex-webapp` with `dockerfilePath: ./backend/Dockerfile` and **`dockerContext: ./`** (repository root). Push to GitHub and connect the repo in Render, or use “New → Blueprint”.
+- **Dockerfile:** multi-stage build — Node builds `frontend/`, then Python image copies `backend/` and the build output into `frontend_build/` inside the app. FastAPI serves static assets and falls back to `index.html` for client routes.
+- **Port:** the container starts with `uvicorn` bound to Render’s `PORT` environment variable.
+- **Public URL:** https://glunex-webapp.onrender.com (adjust if you renamed the service in Render).
+- **API docs:** https://glunex-webapp.onrender.com/docs
 
-### Frontend (Static Site)
-- **Build command:** `npm install && npm run build`
-- **Publish directory:** `build`
-- **Environment variable:** `REACT_APP_API_URL = https://glunex-api.onrender.com`
-- **URL:** `https://glunex-frontend.onrender.com`
+You do **not** need `REACT_APP_API_URL` on Render for the unified setup; the browser uses relative URLs to the same host.
 
-### Docker (Local)
+### Docker (local, full stack in one container)
 
-To run the full app locally with Docker:
+From the **repository root** (not `backend/`):
 
 ```bash
-# Build and run backend
-cd backend
-docker build -t glunex-api .
-docker run -p 8000:8000 glunex-api
+docker build -f backend/Dockerfile -t glunex-webapp .
+docker run -p 8000:8000 -e PORT=8000 glunex-webapp
 ```
+
+Open http://127.0.0.1:8000 for the app and http://127.0.0.1:8000/docs for Swagger.
+
+### Older two-service layout (optional)
+
+If you still maintain a separate static site + API, set `REACT_APP_API_URL` on the static build to your API base URL. The unified `glunex-webapp` setup replaces that with one link.
 
 ---
 
