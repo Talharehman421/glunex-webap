@@ -1,0 +1,14 @@
+# Speed up builds — do not exclude backend/ or frontend/ source
+.git
+.github
+
+**/node_modules
+**/venv
+**/.venv
+**/__pycache__
+**/*.pyc
+
+frontend/build
+frontend/.env*.local
+
+# Large local/runtime artifacts (models must stay in backend/models — do not ignore models/)

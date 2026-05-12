@@ -137,6 +137,7 @@ The fusion meta-model is a Logistic Regression trained on synthetic patients con
 
 ```
 glunex-webap/
+├── Dockerfile                     ← Multi-stage: Node build + FastAPI (build from repo root)
 ├── render.yaml                    ← Render Blueprint: single Docker web service
 ├── backend/
 │   ├── main.py                    ← FastAPI app + API + serves React build in production
@@ -148,7 +149,6 @@ glunex-webap/
 │   │   └── fusion.py              ← Fusion variant selection + meta-model
 │   ├── models/                    ← All 19 trained model files (joblib/json/csv)
 │   ├── requirements.txt
-│   └── Dockerfile
 │
 ├── frontend/
 │   ├── public/
@@ -361,8 +361,9 @@ All 19 model files live in `backend/models/`. They are required for the backend 
 
 **Single service on Render (recommended):** one Docker web app serves the API and the built React UI.
 
-- **Blueprint:** `render.yaml` defines service `glunex-webapp` with `dockerfilePath: ./backend/Dockerfile` and **`dockerContext: ./`** (repository root). Push to GitHub and connect the repo in Render, or use “New → Blueprint”.
-- **Dockerfile:** multi-stage build — Node builds `frontend/`, then Python image copies `backend/` and the build output into `frontend_build/` inside the app. FastAPI serves static assets and falls back to `index.html` for client routes.
+- **Blueprint:** `render.yaml` uses **`dockerfilePath: ./Dockerfile`** and **`dockerContext: .`** (repository root). Push to GitHub and connect the repo in Render, or use “New → Blueprint”.
+- **Render dashboard (important):** Service **Root Directory** must be **empty** (repo root), not `backend`. If Root Directory is `backend`, the Docker context only contains the backend folder, so `COPY frontend/` and `COPY backend/...` fail. Set **Dockerfile Path** to `Dockerfile`.
+- **Dockerfile (repo root):** multi-stage build — Node builds `frontend/`, then Python image copies `backend/` and the build output into `frontend_build/`. FastAPI serves static assets and falls back to `index.html` for client routes.
 - **Port:** the container starts with `uvicorn` bound to Render’s `PORT` environment variable.
 - **Public URL:** https://glunex-webapp.onrender.com (adjust if you renamed the service in Render).
 - **API docs:** https://glunex-webapp.onrender.com/docs
@@ -374,7 +375,7 @@ You do **not** need `REACT_APP_API_URL` on Render for the unified setup; the bro
 From the **repository root** (not `backend/`):
 
 ```bash
-docker build -f backend/Dockerfile -t glunex-webapp .
+docker build -t glunex-webapp .
 docker run -p 8000:8000 -e PORT=8000 glunex-webapp
 ```
 
